@@ -8,7 +8,7 @@ fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
             None => return None,
         }
 
-        if i % 2 == 0 || i == hex_str.len() - 1 {
+        if i % 2 == 1 || i == hex_str.len() - 1 {
             bytes.push(byte);
             byte = 0;
         }
@@ -17,9 +17,11 @@ fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
     Some(bytes)
 }
 
-// fn hex_to_base64(hex_str: &str) -> String {
-//     let hex = 
-// }
+fn hex_to_base64(hex_str: &str) -> String {
+    let bytes = hex_string_to_bytes(hex_str).unwrap();
+
+    
+}
 
 #[cfg(test)]
 mod test {
@@ -28,5 +30,8 @@ mod test {
     #[test]
     fn test_hex_string_to_bytes() {
         assert_eq!(vec![1u8], hex_string_to_bytes("01").unwrap());
+        assert_eq!(None, hex_string_to_bytes("x"));
+        assert_eq!(vec![255u8, 220u8, 15u8], hex_string_to_bytes("ffdc0f").unwrap());
     }
+
 }
