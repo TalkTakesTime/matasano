@@ -1,0 +1,6 @@
+[package]
+name = "matasano"
+version = "0.1.0"
+authors = ["Ben Frengley <b3nf@hotmail.com>"]
+
+[dependencies]
