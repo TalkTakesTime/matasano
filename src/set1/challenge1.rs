@@ -51,16 +51,7 @@ pub fn hex_to_base64(hex_str: &str) -> String {
 
 #[cfg(test)]
 mod test {
-    use super::super::shared::hex_string_to_bytes;
     use super::hex_to_base64;
-
-    #[test]
-    fn test_hex_string_to_bytes() {
-        assert_eq!(vec![1u8], hex_string_to_bytes("01").unwrap());
-        assert_eq!(vec![12u8], hex_string_to_bytes("c").unwrap());
-        assert_eq!(None, hex_string_to_bytes("x"));
-        assert_eq!(vec![255u8, 220u8, 15u8], hex_string_to_bytes("ffdc0f").unwrap());
-    }
 
     #[test]
     fn test_hex_to_base64() {

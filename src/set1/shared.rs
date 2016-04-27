@@ -34,3 +34,24 @@ pub fn bytes_to_hex_string(bytes: Vec<u8>) -> String {
         .concat()
         .to_string()
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_hex_string_to_bytes() {
+        assert_eq!(vec![1u8], hex_string_to_bytes("01").unwrap());
+        assert_eq!(vec![12u8], hex_string_to_bytes("c").unwrap());
+        assert_eq!(None, hex_string_to_bytes("x"));
+        assert_eq!(vec![255u8, 220u8, 15u8], hex_string_to_bytes("ffdc0f").unwrap());
+    }
+
+    #[test]
+    fn test_bytes_to_hex_string() {
+        assert_eq!("ff".to_string(), bytes_to_hex_string(vec![255u8]));
+        assert_eq!("0".to_string(), bytes_to_hex_string(vec![0u8]));
+        assert_eq!("ffdc0f".to_string(), bytes_to_hex_string(vec![255u8, 220u8, 15u8]));
+        assert_eq!("c".to_string(), bytes_to_hex_string(vec![12u8]));
+    }
+}
