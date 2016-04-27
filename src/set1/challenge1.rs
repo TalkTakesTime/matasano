@@ -1,33 +1,5 @@
 use std::collections::HashMap;
-
-fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
-    let mut bytes: Vec<u8> = Vec::new();
-    let mut byte = 0u8;
-
-    let data = if hex_str.len() % 2 == 0 {
-        hex_str.to_string()
-    } else {
-        "0".to_string() + &hex_str
-    };
-
-    for (i, b) in data.chars().enumerate() {
-        match b.to_digit(16) {
-            Some(n) => byte += if i % 2 == 0 {
-                n << 4
-            } else {
-                n
-            } as u8,
-            None => return None,
-        }
-
-        if i % 2 == 1 {
-            bytes.push(byte);
-            byte = 0;
-        }
-    }
-
-    Some(bytes)
-}
+use super::shared::hex_string_to_bytes;
 
 // there has to be a better way to do this
 fn base64_keys() -> HashMap<u8, char> {
@@ -79,7 +51,8 @@ pub fn hex_to_base64(hex_str: &str) -> String {
 
 #[cfg(test)]
 mod test {
-    use super::{hex_string_to_bytes, hex_to_base64};
+    use super::super::shared::hex_string_to_bytes;
+    use super::hex_to_base64;
 
     #[test]
     fn test_hex_string_to_bytes() {
