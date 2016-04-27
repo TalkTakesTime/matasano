@@ -28,11 +28,16 @@ pub fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
 }
 
 pub fn bytes_to_hex_string(bytes: Vec<u8>) -> String {
-    bytes.iter()
-        .map(|x| format!("{:x}", x))
-        .collect::<Vec<String>>()
-        .concat()
-        .to_string()
+    if bytes.iter().all(|x| *x == 0u8) {
+        "0".to_string()
+    } else {
+        bytes.iter()
+            .map(|x| format!("{:02x}", x))
+            .collect::<Vec<String>>()
+            .concat()
+            .trim_left_matches('0')
+            .to_string()
+    }
 }
 
 #[cfg(test)]
