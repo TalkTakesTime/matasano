@@ -10,11 +10,7 @@ pub fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
 
     for (i, b) in data.chars().enumerate() {
         match b.to_digit(16) {
-            Some(n) => byte += if i % 2 == 0 {
-                n << 4
-            } else {
-                n
-            } as u8,
+            Some(n) => byte += if i % 2 == 0 { n << 4 } else { n } as u8,
             None => return None,
         }
 
@@ -31,7 +27,8 @@ pub fn bytes_to_hex_string(bytes: Vec<u8>) -> String {
     if bytes.iter().all(|x| *x == 0u8) {
         "0".to_string()
     } else {
-        bytes.iter()
+        bytes
+            .iter()
             .map(|x| format!("{:02x}", x))
             .collect::<Vec<String>>()
             .concat()

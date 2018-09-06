@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use super::shared::hex_string_to_bytes;
+use std::collections::HashMap;
 
 // there has to be a better way to do this
 fn base64_keys() -> HashMap<u8, char> {
@@ -13,14 +13,22 @@ fn base64_keys() -> HashMap<u8, char> {
         .collect()
 }
 
-fn triplet_to_base64(triplet: &mut u32) -> Vec<char> {
-    let keys = base64_keys();
+fn triplet_to_base64(triplet: u32) -> Vec<char> {
+    let base64_chars = base64_keys();
     let mut chars: Vec<char> = Vec::new();
+    let mut trip = triplet;
 
-    // haha who likes readable code anyway xd
-    while *triplet & 0xffffff != 0u32 {
-        chars.push(keys.get(&(((*triplet >> 18) & 0x3f) as u8)).unwrap().clone());
-        *triplet <<= 6;
+    // we only care about the bottom 3 bytes (4 6-bit values)
+    while trip & 0xffffff != 0u32 {
+        // base 64 has 64 keys (duh) so each key is 6 bits
+        let key = (
+            // drop the first 3 6-bit values
+            (trip >> 18)
+            // and mask off the remaining 6-bit value
+            & 0x3f
+        ) as u8;
+        chars.push(*base64_chars.get(&key).unwrap());
+        trip <<= 6;
     }
 
     chars
@@ -36,14 +44,10 @@ pub fn hex_to_base64(hex_str: &str) -> String {
         triplet = (triplet << 8) + bytes.get(i).unwrap().clone() as u32;
 
         if i % 3 == 2 {
-            for c in triplet_to_base64(&mut triplet).iter() {
+            for c in triplet_to_base64(triplet).iter() {
                 chars.push(c.clone());
             }
         }
-    }
-
-    for c in triplet_to_base64(&mut triplet).iter() {
-        chars.push(c.clone());
     }
 
     chars.into_iter().collect()
