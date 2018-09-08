@@ -31,21 +31,28 @@ fn triplet_to_base64(triplet: u32) -> Vec<char> {
         trip <<= 6;
     }
 
+    while chars.len() < 4 {
+        chars.push('=');
+    }
+
     chars
 }
 
 pub fn hex_to_base64(hex_str: &str) -> String {
+    // this probably shouldn't be a .unwrap()
     let bytes = hex_string_to_bytes(hex_str).unwrap();
     let mut chars: Vec<char> = Vec::new();
 
     let mut triplet = 0u32;
+    let triplet_count = (bytes.len() + 2) / 3;
 
-    for i in 0..bytes.len() {
-        triplet = (triplet << 8) + bytes.get(i).unwrap().clone() as u32;
+    for i in 0..(triplet_count * 3) {
+        let num = if let Some(n) = bytes.get(i) { *n } else { 0 } as u32;
+        triplet = (triplet << 8) + num;
 
         if i % 3 == 2 {
             for c in triplet_to_base64(triplet).iter() {
-                chars.push(c.clone());
+                chars.push(*c);
             }
         }
     }
@@ -55,12 +62,21 @@ pub fn hex_to_base64(hex_str: &str) -> String {
 
 #[cfg(test)]
 mod test {
+    use super::super::shared::bytes_to_hex_string;
     use super::hex_to_base64;
 
     #[test]
     fn test_hex_to_base64() {
         let input = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";
         let expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t".to_string();
+        assert_eq!(expected, hex_to_base64(input));
+
+        let input = bytes_to_hex_string("this is a test".as_bytes().to_vec());
+        let expected = "dGhpcyBpcyBhIHRlc3Q=".to_string();
+        assert_eq!(expected, hex_to_base64(&input));
+
+        let input = "4d";
+        let expected = "TQ==".to_string();
         assert_eq!(expected, hex_to_base64(input));
     }
 }
