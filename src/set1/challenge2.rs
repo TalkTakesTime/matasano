@@ -1,5 +1,9 @@
 use super::shared::*;
 
+pub fn xor_bytes(b1: &Vec<u8>, b2: &Vec<u8>) -> Vec<u8> {
+    b1.iter().zip(b2).map(|(x, y)| x ^ y).collect()
+}
+
 pub fn fixed_xor(hex1: &str, hex2: &str) -> Result<String, String> {
     let hex1 = hex_string_to_bytes(hex1).unwrap();
     let hex2 = hex_string_to_bytes(hex2).unwrap();
@@ -8,7 +12,7 @@ pub fn fixed_xor(hex1: &str, hex2: &str) -> Result<String, String> {
         return Err("lengths didn't match".to_string());
     }
 
-    Ok(bytes_to_hex_string(hex1.iter().zip(hex2).map(|(x, y)| x ^ y).collect()))
+    Ok(bytes_to_hex_string(xor_bytes(&hex1, &hex2)))
 }
 
 #[cfg(test)]
