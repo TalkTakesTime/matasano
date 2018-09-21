@@ -23,7 +23,7 @@ pub fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
     Some(bytes)
 }
 
-pub fn bytes_to_hex_string(bytes: Vec<u8>) -> String {
+pub fn bytes_to_hex_string(bytes: &Vec<u8>) -> String {
     if bytes.iter().all(|x| *x == 0u8) {
         "0".to_string()
     } else {
@@ -32,7 +32,6 @@ pub fn bytes_to_hex_string(bytes: Vec<u8>) -> String {
             .map(|x| format!("{:02x}", x))
             .collect::<Vec<String>>()
             .concat()
-            .trim_left_matches('0')
             .to_string()
     }
 }
@@ -51,9 +50,9 @@ mod test {
 
     #[test]
     fn test_bytes_to_hex_string() {
-        assert_eq!("ff".to_string(), bytes_to_hex_string(vec![255u8]));
-        assert_eq!("0".to_string(), bytes_to_hex_string(vec![0u8]));
-        assert_eq!("ffdc0f".to_string(), bytes_to_hex_string(vec![255u8, 220u8, 15u8]));
-        assert_eq!("c".to_string(), bytes_to_hex_string(vec![12u8]));
+        assert_eq!("ff".to_string(), bytes_to_hex_string(&vec![255u8]));
+        assert_eq!("0".to_string(), bytes_to_hex_string(&vec![0u8]));
+        assert_eq!("ffdc0f".to_string(), bytes_to_hex_string(&vec![255u8, 220u8, 15u8]));
+        assert_eq!("0c".to_string(), bytes_to_hex_string(&vec![12u8]));
     }
 }

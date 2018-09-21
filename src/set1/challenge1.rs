@@ -71,7 +71,7 @@ mod test {
         let expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t".to_string();
         assert_eq!(expected, hex_to_base64(input));
 
-        let input = bytes_to_hex_string("this is a test".as_bytes().to_vec());
+        let input = bytes_to_hex_string(&"this is a test".as_bytes().to_vec());
         let expected = "dGhpcyBpcyBhIHRlc3Q=".to_string();
         assert_eq!(expected, hex_to_base64(&input));
 

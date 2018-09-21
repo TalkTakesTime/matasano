@@ -12,7 +12,7 @@ pub fn fixed_xor(hex1: &str, hex2: &str) -> Result<String, String> {
         return Err("lengths didn't match".to_string());
     }
 
-    Ok(bytes_to_hex_string(xor_bytes(&hex1, &hex2)))
+    Ok(bytes_to_hex_string(&xor_bytes(&hex1, &hex2)))
 }
 
 #[cfg(test)]
