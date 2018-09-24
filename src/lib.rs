@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[macro_use]
+extern crate assert_approx_eq;
+
 pub mod set1;
 // pub mod set2;
 // pub mod set3;

@@ -13,7 +13,7 @@ fn main() -> io::Result<()> {
     let best_guess = data
         .split('\n')
         .map(|line| challenge3::guess_xor_message(line).unwrap())
-        .max_by_key(|guess| guess.weight)
+        .min_by_key(|guess| guess.weight)
         .unwrap();
     println!("{:#?}", best_guess);
     Ok(())

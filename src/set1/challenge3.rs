@@ -1,5 +1,6 @@
 use super::challenge2::xor_bytes;
 use super::shared::hex_string_to_bytes;
+use std::collections::HashMap;
 use std::iter;
 use std::iter::FromIterator;
 
@@ -10,28 +11,39 @@ pub struct Guess {
     pub weight: usize,
 }
 
+static FREQUENCY_LIST: &str = " ETAOINSHRDLCUMWFGYPBVKJXQZ";
+
+fn get_weights() -> HashMap<char, usize> {
+    FREQUENCY_LIST
+        .chars()
+        .enumerate()
+        .map(|(i, chr)| (chr, i as usize))
+        .collect()
+}
+
 fn decode(message: &Vec<u8>, key: u8) -> Vec<u8> {
     xor_bytes(message, &iter::repeat(key as u8).take(message.len()).collect())
 }
 
-fn evaluate(message: &Vec<u8>) -> usize {
+fn evaluate(message: &Vec<u8>, weights: &HashMap<char, usize>) -> usize {
     message
         .iter()
-        .filter(|&&x| (x as char).is_ascii_alphabetic() || x == b' ')
-        .count()
+        .map(|&chr| weights.get(&(chr as char).to_ascii_uppercase()).unwrap_or(&27))
+        .sum()
 }
 
 pub fn guess_xor_message(encoded: &str) -> Option<Guess> {
     let bytes = hex_string_to_bytes(encoded)?;
+    let weights = get_weights();
     (1u8..255u8)
         .map(|key| {
             let decoded = decode(&bytes, key);
             Guess {
                 key: key,
-                weight: evaluate(&decoded),
-                message: String::from_iter(decoded.iter().map(|c| *c as char)),
+                weight: evaluate(&decoded, &weights),
+                message: String::from_iter(decoded.iter().map(|&c| c as char)),
             }
-        }).max_by_key(|guess| guess.weight)
+        }).min_by_key(|guess| guess.weight)
 }
 
 #[cfg(test)]
