@@ -1,4 +1,5 @@
-use super::challenge3::guess_xor_message;
+use super::challenge3::{get_weights, guess_xor_bytes};
+use super::challenge5::encode;
 
 fn hamming_distance<'a>(bytes1: impl Iterator<Item = &'a u8>, bytes2: impl Iterator<Item = &'a u8>) -> u32 {
     bytes1.zip(bytes2).map(|(&b1, &b2)| (b1 ^ b2).count_ones()).sum()
@@ -14,12 +15,13 @@ fn normalised_hamming_distance<'a>(
 
 fn n_block_average_dist(data: &Vec<u8>, block_count: usize, block_size: usize) -> f64 {
     let distance_count = block_count as f64 / 2.0;
-    let mut blocks = data.chunks(block_size);
+    let mut blocks = data.chunks(block_size).peekable();
 
-    (0..(block_count / 2))
-        .map(|_| normalised_hamming_distance(blocks.next().unwrap().iter(), blocks.next().unwrap().iter(), block_size))
-        .sum::<f64>()
-        / distance_count
+    let dists = (0..(block_count / 2))
+        .map(|_| normalised_hamming_distance(blocks.next().unwrap().iter(), blocks.peek().unwrap().iter(), block_size))
+        .collect::<Vec<_>>();
+
+    dists.iter().sum::<f64>() / distance_count
 }
 
 fn transpose(blocks: &Vec<&[u8]>, block_size: usize) -> Vec<Vec<u8>> {
@@ -28,7 +30,7 @@ fn transpose(blocks: &Vec<&[u8]>, block_size: usize) -> Vec<Vec<u8>> {
     for i in 0..blocks.len() {
         for j in 0..block_size {
             match blocks[i].get(j) {
-                Some(&x) => transposed_blocks[j][i] = x,
+                Some(&x) => transposed_blocks[j].push(x),
                 None => (),
             }
         }
@@ -37,16 +39,22 @@ fn transpose(blocks: &Vec<&[u8]>, block_size: usize) -> Vec<Vec<u8>> {
     transposed_blocks
 }
 
-pub fn decrypt_xor_cipher(data: &Vec<u8>) {
+pub fn decrypt_xor_cipher(data: &Vec<u8>) -> (Vec<u8>, Vec<u8>) {
+    let weights = get_weights();
+
     let (key_size, _) = (2..40)
-        .map(|key_len| (key_len, n_block_average_dist(data, 4, key_len)))
-        .min_by(|(_, dist1), (_, dist2)| dist2.partial_cmp(dist1).unwrap())
+        .map(|key_len| (key_len, n_block_average_dist(data, 20, key_len))) // why is such a high value necessary
+        .min_by(|(_, dist1), (_, dist2)| dist1.partial_cmp(dist2).unwrap())
         .unwrap();
 
     let blocks = data.chunks(key_size).collect::<Vec<_>>();
     let blocks = transpose(&blocks, key_size);
-    // TODO: guess_xor_message needs to take u8s not str
-    // let keys_by_block = blocks.iter().map(|data| guess_xor_message())
+    let full_key = blocks
+        .iter()
+        .map(|data| guess_xor_bytes(&data, &weights).unwrap().key)
+        .collect::<Vec<_>>();
+    let data = encode(data, &full_key);
+    (full_key, data)
 }
 
 #[cfg(test)]
@@ -80,6 +88,17 @@ mod test {
             (normalised_hamming_distance(data.iter(), data.iter().skip(5), 5)
                 + normalised_hamming_distance(data.iter().skip(10), data.iter().skip(15), 5))
                 / 2.0
+        );
+    }
+
+    #[test]
+    fn test_transpose() {
+        let input = (1u8..12u8).collect::<Vec<_>>();
+        let input = input.chunks(3).collect::<Vec<_>>();
+
+        assert_eq!(
+            transpose(&input, 3),
+            vec![vec![1, 4, 7, 10], vec![2, 5, 8, 11], vec![3, 6, 9],]
         );
     }
 }

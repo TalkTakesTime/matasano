@@ -6,5 +6,6 @@ fn main() {
     let input = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
     println!("Input: {}", input);
     let guess = challenge3::guess_xor_message(input).unwrap();
-    println!("{:#?}", guess);
+    println!("Guess: {}", guess.message());
+    println!("Using key: {}, with weight: {}", guess.key, guess.weight);
 }

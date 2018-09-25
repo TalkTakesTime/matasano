@@ -1,5 +1,6 @@
-use super::shared::hex_string_to_bytes;
+use super::shared::*;
 use std::collections::HashMap;
+use std::iter::FromIterator;
 
 // there has to be a better way to do this
 fn base64_keys() -> HashMap<u8, char> {
@@ -47,7 +48,7 @@ pub fn hex_to_base64(hex_str: &str) -> String {
     let triplet_count = (bytes.len() + 2) / 3;
 
     for i in 0..(triplet_count * 3) {
-        let num = if let Some(n) = bytes.get(i) { *n } else { 0 } as u32;
+        let num = if let Some(&n) = bytes.get(i) { n } else { 0 } as u32;
         triplet = (triplet << 8) + num;
 
         if i % 3 == 2 {
@@ -60,10 +61,30 @@ pub fn hex_to_base64(hex_str: &str) -> String {
     chars.into_iter().collect()
 }
 
+fn nth_byte(num: u32, n: u32) -> u32 {
+    num >> (n * 8) & 0xff
+}
+
+pub fn base64_to_hex(base64_str: &str) -> String {
+    let keys: HashMap<char, u8> = base64_keys().iter().map(|(&k, &v)| (v, k)).collect();
+    let chars = Vec::from_iter(base64_str.chars());
+    let bytes = chars
+        // 4 base64 chars -> 3 bytes
+        .chunks(4)
+        .map(|quad| {
+            quad.iter()
+                // collect 4 chars into a single u32 with 3 occupied bytes (a triplet)
+                .fold(0, |acc, chr| (acc << 6) + (*keys.get(chr).unwrap_or(&0u8) as u32))
+        // split the triplet into individual bytes and flatten
+        }).flat_map(|triplet| vec![nth_byte(triplet, 2) as u8, nth_byte(triplet, 1) as u8, triplet as u8])
+        .collect();
+    bytes_to_hex_string(&bytes).trim_right_matches("0").to_string()
+}
+
 #[cfg(test)]
 mod test {
     use super::super::shared::bytes_to_hex_string;
-    use super::hex_to_base64;
+    use super::*;
 
     #[test]
     fn test_hex_to_base64() {
@@ -71,12 +92,29 @@ mod test {
         let expected = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t".to_string();
         assert_eq!(expected, hex_to_base64(input));
 
-        let input = bytes_to_hex_string(&"this is a test".as_bytes().to_vec());
+        let input = bytes_to_hex_string(&b"this is a test".to_vec());
         let expected = "dGhpcyBpcyBhIHRlc3Q=".to_string();
         assert_eq!(expected, hex_to_base64(&input));
 
         let input = "4d";
         let expected = "TQ==".to_string();
         assert_eq!(expected, hex_to_base64(input));
+    }
+
+    #[test]
+    fn test_base64_to_hex() {
+        let input = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+        let expected =
+            "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
+                .to_string();
+        assert_eq!(expected, base64_to_hex(input));
+
+        let input = "dGhpcyBpcyBhIHRlc3Q=";
+        let expected = bytes_to_hex_string(&b"this is a test".to_vec()).to_string();
+        assert_eq!(expected, base64_to_hex(&input));
+
+        let input = "TQ==";
+        let expected = "4d".to_string();
+        assert_eq!(expected, base64_to_hex(input));
     }
 }

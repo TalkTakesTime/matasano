@@ -15,6 +15,7 @@ fn main() -> io::Result<()> {
         .map(|line| challenge3::guess_xor_message(line).unwrap())
         .min_by_key(|guess| guess.weight)
         .unwrap();
-    println!("{:#?}", best_guess);
+    println!("Guess: {}", best_guess.message());
+    println!("Using key: {}, with weight: {}", best_guess.key, best_guess.weight);
     Ok(())
 }
