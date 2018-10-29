@@ -18,10 +18,9 @@ fn n_block_average_dist(data: &Vec<u8>, block_count: usize, block_size: usize) -
     let mut blocks = data.chunks(block_size).peekable();
 
     let dists = (0..(block_count / 2))
-        .map(|_| normalised_hamming_distance(blocks.next().unwrap().iter(), blocks.peek().unwrap().iter(), block_size))
-        .collect::<Vec<_>>();
+        .map(|_| normalised_hamming_distance(blocks.next().unwrap().iter(), blocks.peek().unwrap().iter(), block_size));
 
-    dists.iter().sum::<f64>() / distance_count
+    dists.sum::<f64>() / distance_count
 }
 
 fn transpose(blocks: &Vec<&[u8]>, block_size: usize) -> Vec<Vec<u8>> {
@@ -86,7 +85,7 @@ mod test {
         assert_approx_eq!(
             n_block_average_dist(&data, 4, 5),
             (normalised_hamming_distance(data.iter(), data.iter().skip(5), 5)
-                + normalised_hamming_distance(data.iter().skip(10), data.iter().skip(15), 5))
+                + normalised_hamming_distance(data.iter().skip(5), data.iter().skip(10), 5))
                 / 2.0
         );
     }
