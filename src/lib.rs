@@ -1,6 +1,8 @@
 #[cfg(test)]
 #[macro_use]
 extern crate assert_approx_eq;
+extern crate aes;
+extern crate block_modes;
 
 pub mod set1;
 // pub mod set2;
