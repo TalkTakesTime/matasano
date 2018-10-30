@@ -1,3 +1,5 @@
+use std::iter::FromIterator;
+
 pub fn hex_string_to_bytes(hex_str: &str) -> Option<Vec<u8>> {
     let mut bytes: Vec<u8> = Vec::new();
     let mut byte = 0u8;
@@ -34,6 +36,10 @@ pub fn bytes_to_hex_string(bytes: &Vec<u8>) -> String {
             .concat()
             .to_string()
     }
+}
+
+pub fn bytes_to_string(bytes: &Vec<u8>) -> String {
+    String::from_iter(bytes.iter().map(|&c| c as char))
 }
 
 #[cfg(test)]

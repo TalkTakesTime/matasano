@@ -2,16 +2,31 @@ use aes::Aes128;
 use block_modes::block_padding::ZeroPadding;
 use block_modes::{BlockMode, Ecb};
 
-type Aes128Ecb = Ecb<Aes128, ZeroPadding>;
+pub struct Aes128Ecb {
+    cipher: Ecb<Aes128, ZeroPadding>,
+}
 
-pub fn aes128ecb_decode(key: &[u8], data: &[u8]) -> Result<Vec<u8>, String> {
-    let cipher = match Aes128Ecb::new_varkey(key) {
-        Ok(v) => v,
-        Err(_) => return Err("invalid key length".to_string()),
-    };
-    let mut buf = Vec::from(data);
-    match cipher.decrypt_pad(&mut buf) {
-        Ok(decrypted_data) => Ok(Vec::from(decrypted_data)),
-        Err(_) => Err("failed to decrypt".to_string()),
+impl Aes128Ecb {
+    pub fn new(key: &[u8]) -> Result<Self, String> {
+        match Ecb::<Aes128, ZeroPadding>::new_varkey(key) {
+            Ok(cipher) => Ok(Self { cipher }),
+            Err(_) => Err("invalid key length".to_string()),
+        }
+    }
+
+    pub fn decrypt(&mut self, data: &[u8]) -> Result<Vec<u8>, String> {
+        let mut buf = Vec::from(data);
+        match self.cipher.decrypt_nopad(&mut buf) {
+            Ok(()) => Ok(buf),
+            Err(_) => Err("failed to decrypt".to_string()),
+        }
+    }
+
+    pub fn encrypt(&mut self, data: &[u8]) -> Result<Vec<u8>, String> {
+        let mut buf = Vec::from(data);
+        match self.cipher.encrypt_nopad(&mut buf) {
+            Ok(()) => Ok(buf),
+            Err(_) => Err("failed to encrypt".to_string()),
+        }
     }
 }
